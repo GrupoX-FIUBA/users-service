@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  fastapi:
+    build: .
+    container_name: fastapi
+    ports:
+      - ${PORT:-8000}:${PORT:-8000}
+    environment:
+      - PORT=${PORT:-8000}
