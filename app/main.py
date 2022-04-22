@@ -26,7 +26,7 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-	return {"msg": "Hola jorge"}
+	return {"msg": "Servicio de Usuarios"}
 
 
 # Devuelve una lista de todos los usuarios
