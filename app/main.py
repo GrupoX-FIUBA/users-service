@@ -85,7 +85,6 @@ async def delete_user(user_id):
 
 	try:
 		auth.delete_user(user_id)
-	except firebase_admin._auth_utils.EmailAlreadyExistsError:
-		raise HTTPException(status_code=400, detail="No se pudo eliminar el usuario")
-
+	except firebase_admin._auth_utils.UserNotFoundError:
+		raise HTTPException(status_code=400, detail="El usuario no existe")
 	return {'detail' : 'Usuario Corractemente eliminado'}
