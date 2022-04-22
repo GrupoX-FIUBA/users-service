@@ -1,7 +1,7 @@
 import xdrlib
-from fastapi import FastAPI
+from fastapi  import FastAPI
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException
+from fastapi  import FastAPI, HTTPException
 import os
 
 import firebase_admin
@@ -30,7 +30,7 @@ def read_root():
 
 
 # Devuelve una lista de todos los usuarios
-# (Obviamente esto es provisorio)
+# Este metodo es provisorio, hasta que se implemente el paginado.
 @app.get("/users/")
 async def get_users():
 	users_dic = {}
@@ -43,12 +43,11 @@ async def get_users():
 	return users_dic
 
 
+
 class user_to_register(BaseModel):
     email: str
     password: str
-
-
-#Recibe el mail y contra.
+#Recibe email y password de un usuario a dar de alta.
 @app.post("/register/")
 async def create_user(_user : user_to_register ):
 
@@ -64,3 +63,29 @@ async def create_user(_user : user_to_register ):
 	return  {'detail' : "Usuario Correctamente generado",
 	        'user_id' : user.uid ,
 			'email' : user.email }
+
+@app.post("/register/")
+async def create_user(_user : user_to_register ):
+
+	try:
+		user = auth.create_user(
+			email= _user.email,
+			email_verified= False,
+			password= _user.password,
+			disabled= False)
+	except firebase_admin._auth_utils.EmailAlreadyExistsError:
+		raise HTTPException(status_code=400, detail="Email ya Registrado")
+
+	return  {'detail' : "Usuario Correctamente generado",
+	        'user_id' : user.uid ,
+			'email' : user.email }
+
+@app.delete("/{user_id}")
+async def delete_user(user_id):
+
+	try:
+		auth.delete_user(user_id)
+	except firebase_admin._auth_utils.EmailAlreadyExistsError:
+		raise HTTPException(status_code=400, detail="No se pudo eliminar el usuario")
+
+	return {'detail' : 'Usuario Corractemente eliminado'}
