@@ -87,4 +87,23 @@ async def delete_user(user_id):
 		auth.delete_user(user_id)
 	except firebase_admin._auth_utils.UserNotFoundError:
 		raise HTTPException(status_code=400, detail="El usuario no existe")
+
 	return {'detail' : 'Usuario Corractemente eliminado'}
+
+@app.patch("/disable/{user_id}")
+async def disable_user(user_id):
+	try:
+		auth.update_user(user_id, disable = True)
+	except firebase_admin._auth_utils.UserNotFoundError:
+		raise HTTPException(status_code=400, detail="El usuario no existe")
+		
+	return {'detail' : 'Usuario Corractemente deshabilitado'}
+
+@app.patch("/enable/{user_id}")
+async def disable_user(user_id):
+	try:
+		auth.update_user(user_id, disable = False)
+	except firebase_admin._auth_utils.UserNotFoundError:
+		raise HTTPException(status_code=400, detail="El usuario no existe")
+		
+	return {'detail' : 'Usuario Correctemente habilitado'}
