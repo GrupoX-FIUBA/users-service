@@ -64,22 +64,6 @@ async def create_user(_user : user_to_register ):
 	        'user_id' : user.uid ,
 			'email' : user.email }
 
-@app.post("/register/")
-async def create_user(_user : user_to_register ):
-
-	try:
-		user = auth.create_user(
-			email= _user.email,
-			email_verified= False,
-			password= _user.password,
-			disabled= False)
-	except firebase_admin._auth_utils.EmailAlreadyExistsError:
-		raise HTTPException(status_code=400, detail="Email ya Registrado")
-
-	return  {'detail' : "Usuario Correctamente generado",
-	        'user_id' : user.uid ,
-			'email' : user.email }
-
 @app.delete("/{user_id}")
 async def delete_user(user_id):
 
@@ -93,7 +77,7 @@ async def delete_user(user_id):
 @app.patch("/disable/{user_id}")
 async def disable_user(user_id):
 	try:
-		auth.update_user(user_id, disable = True)
+		auth.update_user(user_id, disabled = True)
 	except firebase_admin._auth_utils.UserNotFoundError:
 		raise HTTPException(status_code=400, detail="El usuario no existe")
 		
@@ -102,7 +86,7 @@ async def disable_user(user_id):
 @app.patch("/enable/{user_id}")
 async def enable_user(user_id):
 	try:
-		auth.update_user(user_id, disable = False)
+		auth.update_user(user_id, disabled = False)
 	except firebase_admin._auth_utils.UserNotFoundError:
 		raise HTTPException(status_code=400, detail="El usuario no existe")
 		
