@@ -100,10 +100,10 @@ async def disable_user(user_id):
 	return {'detail' : 'Usuario Corractemente deshabilitado'}
 
 @app.patch("/enable/{user_id}")
-async def disable_user(user_id):
+async def enable_user(user_id):
 	try:
 		auth.update_user(user_id, disable = False)
 	except firebase_admin._auth_utils.UserNotFoundError:
 		raise HTTPException(status_code=400, detail="El usuario no existe")
 		
-	return {'detail' : 'Usuario Correctemente habilitado'}
+	return {'detail' : 'Usuario Corractemente habilitado'}
