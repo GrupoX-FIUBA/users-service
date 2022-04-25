@@ -1,7 +1,7 @@
 import xdrlib
-from fastapi import FastAPI
+from fastapi  import FastAPI
 from pydantic import BaseModel
-from fastapi import FastAPI, HTTPException
+from fastapi  import FastAPI, HTTPException
 import os
 
 import firebase_admin
@@ -20,38 +20,38 @@ cred = credentials.Certificate({
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-3povb%40spotifiuby-bc6da.iam.gserviceaccount.com"
 })
+
 firebase_admin.initialize_app(cred)
 
 app = FastAPI()
 
 @app.get("/")
 def read_root():
-	return {"msg": "Hola jorge"}
+	return {"msg": "Servicio de Usuarios"}
 
 
-# Devuelve una lista de todos los usuarios
-# (Obviamente esto es provisorio)
 @app.get("/users/")
-async def get_users():
-	users_dic = {}
+async def get_users(skip : int = 0 , limit : int  = 100):
+	users_page = []
 	n = 0
 	page = auth.list_users()
 	for user in auth.list_users().iterate_all():
-		users_dic[n] = {'id':user.uid, 'mail' : user.email}
+		if ( n == (skip+limit) ):
+			break
+		
+		if( n >= skip ) :
+			users_page.append ( {'index': n,'id':user.uid, 'mail' : user.email} )
 		n+=1
 
-	return users_dic
-
+	return users_page
 
 class user_to_register(BaseModel):
-    email: str
+    email:    str
     password: str
 
-
-#Recibe el mail y contra.
+#Recibe email y password de un usuario a dar de alta.
 @app.post("/register/")
 async def create_user(_user : user_to_register ):
-
 	try:
 		user = auth.create_user(
 			email= _user.email,
@@ -64,3 +64,41 @@ async def create_user(_user : user_to_register ):
 	return  {'detail' : "Usuario Correctamente generado",
 	        'user_id' : user.uid ,
 			'email' : user.email }
+
+@app.delete("/{user_id}")
+async def delete_user(user_id):
+
+	try:
+		auth.delete_user(user_id)
+	except firebase_admin._auth_utils.UserNotFoundError:
+		raise HTTPException(status_code=400, detail="El usuario no existe")
+	return {'detail' : 'Usuario Corractemente eliminado'}
+
+
+@app.patch("/disable/{user_id}")
+async def disable_user(user_id):
+	try:
+		auth.update_user(user_id, disabled = True)
+	except firebase_admin._auth_utils.UserNotFoundError:
+		raise HTTPException(status_code=400, detail="El usuario no existe")
+	return {'detail' : 'Usuario Corractemente deshabilitado'}
+
+
+@app.patch("/enable/{user_id}")
+async def enable_user(user_id):
+	try:
+		auth.update_user(user_id, disabled = False)
+	except firebase_admin._auth_utils.UserNotFoundError:
+		raise HTTPException(status_code=400, detail="El usuario no existe")
+	return {'detail' : 'Usuario Corractemente habilitado'}
+
+#Devuelve la cantidad de usuarios registrados.
+#(Provisorio, pero firebase no tiene un trigger para sacar la cantidad)
+#Cuando haga nuestra propia base sacare el dato de ahi.
+@app.get("/registered_users/")
+async def registered_users():
+	n = 0
+	page = auth.list_users()
+	for user in auth.list_users().iterate_all():
+		n+=1
+	return {'usuarios_registrado': n}
