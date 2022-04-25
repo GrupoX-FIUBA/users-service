@@ -32,15 +32,22 @@ def read_root():
 
 @app.get("/users/")
 async def get_users(skip : int = 0 , limit : int  = 100):
+	if ( (skip < 0) or (limit < 0) ):
+		raise HTTPException(status_code=400, detail="El offset y el limite tienen que ser positivos")
+
 	users_page = []
 	n = 0
 	page = auth.list_users()
 	for user in auth.list_users().iterate_all():
 		if ( n == (skip+limit) ):
 			break
-		
+
 		if( n >= skip ) :
-			users_page.append ( {'index': n,'id':user.uid, 'mail' : user.email} )
+			users_page.append ( {'index': n,
+								 'id'   : user.uid,
+								 'mail' : user.email,
+								 'name' : user.display_name,
+								'disabled': user.disabled } )
 		n+=1
 
 	return users_page
