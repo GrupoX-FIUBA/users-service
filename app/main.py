@@ -120,7 +120,7 @@ async def decode_token(id_token):
 		decoded_token = auth.verify_id_token(id_token)
 		uid = decoded_token['uid']
 		user = auth.get_user(uid)
-	except firebase_admin.auth_utils : 
+	except firebase_admin._auth_utils.InvalidIdTokenError : 
 		raise HTTPException(status_code=400, detail="Token no valido")
 
 	return{'index': 0,
