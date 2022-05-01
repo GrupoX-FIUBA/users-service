@@ -47,7 +47,9 @@ async def get_users(skip : int = 0 , limit : int  = 100):
 								 'id'   : user.uid,
 								 'mail' : user.email,
 								 'name' : user.display_name,
-								'disabled': user.disabled } )
+								'disabled': user.disabled ,
+								'admin' : False,
+								'subscription' : 'Regular'})
 		n+=1
 
 	return users_page
@@ -109,3 +111,22 @@ async def registered_users():
 	for user in auth.list_users().iterate_all():
 		n+=1
 	return {'usuarios_registrado': n}
+
+# Devuelve el usuario en base a su token.
+# En caso de que no se encuentre el usuario se devuelve codigo 400.
+@app.post("/decode_token/")
+async def decode_token(id_token):
+	try: 
+		decoded_token = auth.verify_id_token(id_token)
+		uid = decoded_token['uid']
+		user = auth.get_user(uid)
+	except firebase_admin._auth_utils.InvalidIdTokenError : 
+		raise HTTPException(status_code=400, detail="Token no valido")
+
+	return{'index': 0,
+								 'id'   : user.uid,
+								 'mail' : user.email,
+								 'name' : user.display_name,
+								'disabled': user.disabled ,
+								'admin' : False,
+								'subscription' : 'Regular'}
