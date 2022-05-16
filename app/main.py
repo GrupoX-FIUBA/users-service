@@ -2,11 +2,14 @@ import xdrlib
 from fastapi  import FastAPI
 from pydantic import BaseModel
 from fastapi  import FastAPI, HTTPException
-import os
+from sqlalchemy import create_engine, false
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
 import firebase_admin
 from   firebase_admin import auth
 from   firebase_admin import credentials
+import os
 
 cred = credentials.Certificate({
   "type": "service_account",
@@ -47,9 +50,12 @@ async def get_users(skip : int = 0 , limit : int  = 100):
 								 'id'   : user.uid,
 								 'mail' : user.email,
 								 'name' : user.display_name,
-								'disabled': user.disabled ,
-								'admin' : False,
-								'subscription' : 'Regular'})
+								 'disabled': user.disabled ,
+								 'admin' : False,
+								 'subscription' : 'Regular',
+								 'federated' : False
+								 }
+							   )
 		n+=1
 
 	return users_page
@@ -102,7 +108,7 @@ async def enable_user(user_id):
 	return {'detail' : 'Usuario Corractemente habilitado'}
 
 #Devuelve la cantidad de usuarios registrados.
-#(Provisorio, pero firebase no tiene un trigger para sacar la cantidad)
+#(Provisorio, pero firebase no tiene un metodo para sacar la cantidad)
 #Cuando haga nuestra propia base sacare el dato de ahi.
 @app.get("/registered_users/")
 async def registered_users():
@@ -123,10 +129,11 @@ async def decode_token(id_token):
 	except firebase_admin._auth_utils.InvalidIdTokenError : 
 		raise HTTPException(status_code=400, detail="Token no valido")
 
-	return{'index': 0,
-								 'id'   : user.uid,
-								 'mail' : user.email,
-								 'name' : user.display_name,
-								'disabled': user.disabled ,
-								'admin' : False,
-								'subscription' : 'Regular'}
+	return {	'index': 0,
+				'id'   : user.uid,
+				'mail' : user.email,
+				'name' : user.display_name,
+				'photo' : user.photoURL,
+				'disabled': user.disabled,
+				'admin' : False,
+				'subscription' : 'Regular',}
