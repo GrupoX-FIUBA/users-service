@@ -1,0 +1,18 @@
+hostname: users-service
+logs_enabled: true
+apm_config:
+    #Whether or not the APM Agent should run
+    enabled: true
+logs_config:
+    container_collect_all: true
+listeners:
+  - name: docker
+config_providers:
+  - name: docker
+    polling: true
+    poll_interval: 1s
+process_config:
+    enabled: 'true'
+
+python_version: 3
+
