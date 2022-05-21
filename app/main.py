@@ -136,4 +136,6 @@ async def decode_token(id_token):
 				'photo' : user.photoURL,
 				'disabled': user.disabled,
 				'admin' : False,
-				'subscription' : 'Regular',}
+				'subscription' : 'Regular',
+				'federated' : False
+			}
