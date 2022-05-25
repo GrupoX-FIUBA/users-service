@@ -1,12 +1,15 @@
 from typing import Union
 from pydantic import BaseModel
 
+class SubscriptionBase(BaseModel):
+    description: str
 
-class Subscription(BaseModel):
+class Subscription(SubscriptionBase):
     id: int
-    title: str
-    description: Union[str, None] = None
+    class Config:
+        orm_mode = True
 
+    
 class User(BaseModel):
     uid : str
     email : str
@@ -14,3 +17,5 @@ class User(BaseModel):
     federated : bool
     admin : bool
     subscription : int
+    class Config:
+        orm_mode = True

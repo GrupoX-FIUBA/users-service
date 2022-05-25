@@ -1,15 +1,28 @@
 import xdrlib
-from fastapi  import FastAPI
 from pydantic import BaseModel
-from fastapi  import FastAPI, HTTPException
-from sqlalchemy import create_engine, false
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from fastapi  import FastAPI, HTTPException, Depends
 
 import firebase_admin
 from   firebase_admin import auth
 from   firebase_admin import credentials
 import os
+
+from sqlalchemy.orm import Session
+
+from . import crud, models, schemas
+from .database import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
+
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 cred = credentials.Certificate({
   "type": "service_account",
@@ -139,3 +152,8 @@ async def decode_token(id_token):
 				'subscription' : 'Regular',
 				'federated' : False
 			}
+
+
+@app.post("/subscriptions/", response_model=schemas.Subscription)
+def create_subscription(sub: schemas.SubscriptionBase, db: Session = Depends(get_db)):
+    return crud.create_subscription(db=db, sub=sub)
