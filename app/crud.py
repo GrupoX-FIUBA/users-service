@@ -13,3 +13,7 @@ def create_subscription(db: Session, sub : schemas.SubscriptionBase):
     db.commit()
     db.refresh(db_sub)
     return db_sub
+
+def delete_subscription(db: Session, id : int):
+    db.query(models.Subscription).filter(models.Subscription.id == id).delete()
+    db.commit()

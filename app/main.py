@@ -1,6 +1,7 @@
 import xdrlib
 from pydantic import BaseModel
 from fastapi  import FastAPI, HTTPException, Depends
+from typing import List
 
 import firebase_admin
 from   firebase_admin import auth
@@ -153,7 +154,14 @@ async def decode_token(id_token):
 				'federated' : False
 			}
 
-
 @app.post("/subscriptions/", response_model=schemas.Subscription)
 def create_subscription(sub: schemas.SubscriptionBase, db: Session = Depends(get_db)):
     return crud.create_subscription(db=db, sub=sub)
+
+@app.get("/subscriptions/", response_model = List[schemas.Subscription] )
+def read_subscriptions( skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_subscriptions(db=db, skip = skip , limit = 100)
+
+@app.delete("/subscriptions/", response_model = List[schemas.Subscription] )
+def del_subscriptions( id: int ,db: Session = Depends(get_db) ):
+    crud.delete_subscription(db = db, id = id )
