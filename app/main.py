@@ -142,7 +142,6 @@ async def decode_token(id_token):
 		user = auth.get_user(uid)
 	except firebase_admin._auth_utils.InvalidIdTokenError : 
 		raise HTTPException(status_code=400, detail="Token no valido")
-
 	return {	'index': 0,
 				'id'   : user.uid,
 				'mail' : user.email,
@@ -154,6 +153,8 @@ async def decode_token(id_token):
 				'federated' : False
 			}
 
+
+## Alta y Baja de subscripciones.
 @app.post("/subscriptions/", response_model=schemas.Subscription)
 def create_subscription(sub: schemas.SubscriptionBase, db: Session = Depends(get_db)):
     return crud.create_subscription(db=db, sub=sub)
@@ -164,4 +165,4 @@ def read_subscriptions( skip: int = 0, limit: int = 100, db: Session = Depends(g
 
 @app.delete("/subscriptions/", response_model = List[schemas.Subscription] )
 def del_subscriptions( id: int ,db: Session = Depends(get_db) ):
-    crud.delete_subscription(db = db, id = id )
+    crud.delete_subscription(db = db, id = id)

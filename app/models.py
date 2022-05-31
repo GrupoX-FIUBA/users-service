@@ -11,7 +11,7 @@ class User(Base):
     name = Column(String, unique=False, index=True)
     federated = Column(Boolean, default=False)
     admin = Column(Boolean, default=False)
-    subscription = relationship("Subscription")
+    subscription = relationship("Subscription", back_populates ="User")
 
 
 class Subscription (Base):
