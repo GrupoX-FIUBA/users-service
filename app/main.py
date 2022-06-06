@@ -1,3 +1,4 @@
+import string
 import xdrlib
 from pydantic import BaseModel
 from fastapi  import FastAPI, HTTPException, Depends
@@ -79,7 +80,7 @@ class user_to_register(BaseModel):
     password: str
 
 #Recibe email y password de un usuario a dar de alta.
-@app.post("/register/")
+@app.post("/manual_register/")
 async def create_user(_user : user_to_register ):
 	try:
 		user = auth.create_user(
@@ -153,16 +154,20 @@ async def decode_token(id_token):
 				'federated' : False
 			}
 
+@app.post("/insertUser/", response_model=schemas.User)
+def insert_user(user_id: string, db: Session = Depends(get_db)):
+	
+    #return crud.create_user(db=db, user=user)
 
-## Alta y Baja de subscripciones.
+## Subscriptions CRUD.
 @app.post("/subscriptions/", response_model=schemas.Subscription)
 def create_subscription(sub: schemas.SubscriptionBase, db: Session = Depends(get_db)):
     return crud.create_subscription(db=db, sub=sub)
 
 @app.get("/subscriptions/", response_model = List[schemas.Subscription] )
-def read_subscriptions( skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.get_subscriptions(db=db, skip = skip , limit = 100)
+def read_subscriptions (skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    return crud.get_subscriptions (db=db, skip = skip , limit = 100)
 
 @app.delete("/subscriptions/", response_model = List[schemas.Subscription] )
-def del_subscriptions( id: int ,db: Session = Depends(get_db) ):
-    crud.delete_subscription(db = db, id = id)
+def del_subscriptions (id: int ,db: Session = Depends(get_db) ):
+    crud.delete_subscription (db = db, id = id)

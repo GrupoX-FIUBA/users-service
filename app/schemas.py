@@ -16,6 +16,6 @@ class User(BaseModel):
     name : str
     federated : bool
     admin : bool
-    subscription : int
+    subscription_id : int
     class Config:
         orm_mode = True
