@@ -3,19 +3,24 @@ version: '3'
 services:
   fastapi:
     build: .
-    container_name: music-service-fastapi
+    container_name: users-service-fastapi
     ports:
       - ${PORT:-8000}:${PORT:-8000}
+      - "8125:8125/udp" # DD
+      - "8126:8126/tcp" # DD
     environment:
       - PORT=${PORT:-8000}
-      - DD_API_KEY=${DATADOG_API_KEY}
+      - DD_API_KEY=${DD_API_KEY}
       - DD_SITE=datadoghq.com
-      - DD_DYNO_HOST=false
+      - DD_DYNO_HOST=true
       - DD_APM_ENABLED=true
       - DD_DOGSTATSD_NON_LOCAL_TRAFFIC=true
       - DD_LOGS_ENABLED=true
       - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
-      - DD_CONTAINER_EXCLUDE_LOGS="name:datadog-agent"
+
+      - FB_PRIVATE_KEY_ID={$FB_PRIVATE_KEY_ID}
+      - FB_CLIENT_EMAIL={$FB_CLIENT_EMAIL}
+      - FB_CLIENT_ID={$FB_CLIENT_ID}
     volumes:
      - /var/run/docker.sock:/var/run/docker.sock
      - /proc/:/host/proc/:ro

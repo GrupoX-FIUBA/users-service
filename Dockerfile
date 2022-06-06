@@ -1,16 +1,13 @@
 FROM python:3.9-slim
 
-RUN apt-get update
-
 # Install Heroku GPG dependencies
-RUN apt-get install -y gpg apt-transport-https gpg-agent curl ca-certificates
+RUN apt-get update \
+ && apt-get install -y gnupg apt-transport-https gpg-agent curl ca-certificates
 
 # Copy Datadog configuration
 COPY heroku/datadog-config/ /etc/datadog-agent/
 
-WORKDIR /code
-
-COPY heroku/start.sh ./
+COPY heroku/start.sh /code/start.sh
 
 COPY ./requirements.txt /code/requirements.txt
 COPY ./requirements.dev.txt /code/requirements.dev.txt
@@ -39,8 +36,7 @@ EXPOSE 8125/udp 8126/tcp
 
 COPY ./app /code/app
 
-# Copy Datadog configuration
-COPY heroku/datadog-config/ /etc/datadog-agent/
+WORKDIR /code
 
 # Use app entrypoint
 CMD ["bash", "start.sh"]
