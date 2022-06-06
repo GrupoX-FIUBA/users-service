@@ -1,21 +1,16 @@
 from typing import Union
 from pydantic import BaseModel
 
-class SubscriptionBase(BaseModel):
-    description: str
-
-class Subscription(SubscriptionBase):
-    id: int
-    class Config:
-        orm_mode = True
-
-    
-class User(BaseModel):
-    uid : str
+class UserBase(BaseModel):
     email : str
     name : str
+    subscription : str
+
+    
+class User(UserBase):
+    uid : str # Firebase user id
     federated : bool
     admin : bool
-    subscription_id : int
+    disabled : bool
     class Config:
         orm_mode = True
