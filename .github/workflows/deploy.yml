@@ -17,4 +17,4 @@ jobs:
           heroku_email: ${{ secrets.HEROKU_EMAIL_NICO }}
           usedocker: true
         env:
-          HD_DATADOG_API_KEY: ${{ secrets.DATADOG_API_KEY }}
+          HD_DD_API_KEY: ${{ secrets.DD_API_KEY }}
