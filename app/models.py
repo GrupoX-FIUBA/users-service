@@ -12,3 +12,4 @@ class User(Base):
     federated = Column(Boolean, default=False)
     admin = Column(Boolean, default=False)
     subscription = Column(String, unique=False, default = "Regular")
+    photo_url = Column(String, unique=False)

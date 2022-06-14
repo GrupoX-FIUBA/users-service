@@ -27,3 +27,23 @@ def get_users(db: Session, skip : int, limit : int) :
 
 def count_users(db:Session) :
     return db.query(models.User).count()
+
+def change_admin(db :Session, uid: str, admin : bool):
+    db.query(models.User).filter(models.User.uid == uid)\
+        .update({models.User.admin : admin})
+    db.commit()
+
+def change_subscription(db :Session, uid: str, sub : str):
+    db.query(models.User).filter(models.User.uid == uid)\
+        .update({models.User.subscription : sub})
+    db.commit()
+
+def change_name(db :Session, uid: str, name : str):
+    db.query(models.User).filter(models.User.uid == uid)\
+        .update({models.User.name : name})
+    db.commit()
+
+def change_disable_status(db :Session, uid: str, disabled : bool):
+    db.query(models.User).filter(models.User.uid == uid)\
+        .update({models.User.disabled : disabled})
+    db.commit()

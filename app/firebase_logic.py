@@ -1,6 +1,7 @@
 import firebase_admin
 from   firebase_admin import auth
 from   firebase_admin import credentials
+from sqlalchemy import false
 from sqlalchemy.orm import Session
 from .  import schemas
 from . import crud
@@ -35,7 +36,6 @@ def get_user (uid):
 async def delete_user(uid):
     auth.delete_user(uid)
 
-
 def sync_users(db : Session):
     page = auth.list_users()
     for user in auth.list_users().iterate_all():
@@ -48,16 +48,45 @@ def sync_users(db : Session):
                                             subscription= 'Regular',
                                             disabled =  bool(user.disabled),
                                             admin = False,
-                                            federated=False #Queda pendiente esta Query
+                                            federated=False, #Queda pendiente esta Query
+                                            photo_url=user.photo_url
             ))
         else:
             crud.update_user(db = db,
                             user = schemas.UserBase(
                                     name=user.display_name,
-                                    subscription= 'Regular',
+                                    subscription= db_user.subscription,
                                     disabled =  bool(user.disabled),
-                                    admin = False,
-                                    federated=False #Queda pendiente esta Query,
+                                    admin = db_user.admin,
+                                    federated=False, #Queda pendiente esta Query,
+                                    photo_url = db_user.photo_url,
                                 ),
                                 uid= user.uid
             )
+def manual_register(user : schemas.UserToRegister):
+    user_fb = auth.create_user(
+        email= user.email,
+        email_verified= False,
+        password= user.password,
+        disabled= False,
+        display_name = user.name)
+    return schemas.User(
+        uid = user_fb.uid,
+        email=user_fb.email,
+        name=user_fb.display_name,
+        subscription= 'Regular',
+        disabled =  bool(user_fb.disabled),
+        admin = False,
+        federated=False #Queda pendiente esta Query
+                )
+
+def disable(uid : str):
+    auth.update_user(uid, disabled = True)
+
+def enable(uid : str):
+    auth.update_user(uid, disabled = false)
+
+def decode_token(id_token:str):
+    decoded_token = auth.verify_id_token(id_token)
+    uid = decoded_token['uid']
+    return uid

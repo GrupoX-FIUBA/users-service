@@ -3,6 +3,7 @@ import xdrlib
 from pydantic import BaseModel
 from fastapi  import FastAPI, HTTPException, Depends
 from typing import List
+from sqlalchemy import false
 from sqlalchemy.orm import Session
 from . import crud, models, schemas
 
@@ -80,146 +81,60 @@ def delete_user(user_id : str, db: Session = Depends(get_db)):
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 	return user
 
-@app.delete("/users/{user_id}")
-def delete_user(user_id : str, db: Session = Depends(get_db)):
-	try:
-		fl.delete_user(uid = user_id)
-		user = crud.delete_user(db = db, uid = user_id)
-	except BaseException as e:
-		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
-	return user
-
 @app.patch("/user/admin_status/{user_id}")
 def change_admin(user_id : str, admin:bool, db: Session = Depends(get_db)):
 	try:
-		user = crud.change_admin(db = db, uid = user_id, admin)
+		user = crud.change_admin(db = db, uid = user_id, admin = admin)
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 	return user
 
+@app.patch("/user/subscription_status/{user_id}")
+def change_sub(user_id : str, subscription:str, db: Session = Depends(get_db)):
+	try:
+		user = crud.change_subscription(db = db, uid = user_id, sub = subscription)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+	return user
 
-'''
-@app.get("/users/")
-async def get_users(skip : int = 0 , limit : int  = 100):
-	if ( (skip < 0) or (limit < 0) ):
-		raise HTTPException(status_code=400, detail="El offset y el limite tienen que ser positivos")
-
-	users_page = []
-	n = 0
-	page = auth.list_users()
-	for user in auth.list_users().iterate_all():
-		if ( n == (skip+limit) ):
-			break
-
-		if( n >= skip ) :
-			users_page.append ( {'index': n,
-								 'id'   : user.uid,
-								 'mail' : user.email,
-								 'name' : user.display_name,
-								 'disabled': user.disabled ,
-								 'admin' : False,
-								 'subscription' : 'Regular',
-								 'federated' : False
-								 }
-							   )
-		n+=1
-
-	return users_page
-
-class user_to_register(BaseModel):
-    email:    str
-    password: str
+@app.patch("/user/update_name/{user_id}")
+def change_name(user_id : str, name:str, db: Session = Depends(get_db)):
+	try:
+		user = crud.change_name(db = db, uid = user_id, name = name)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+	return user
 
 #Recibe email y password de un usuario a dar de alta.
 @app.post("/manual_register/")
-async def create_user(_user : user_to_register ):
+def manual_register(user : schemas.UserToRegister, db: Session = Depends(get_db)):
 	try:
-		user = auth.create_user(
-			email= _user.email,
-			email_verified= False,
-			password= _user.password,
-			disabled= False)
-	except firebase_admin._auth_utils.EmailAlreadyExistsError:
-		raise HTTPException(status_code=400, detail="Email ya Registrado")
-
-	return  {'detail' : "Usuario Correctamente generado",
-	        'user_id' : user.uid ,
-			'email' : user.email }
-
-@app.delete("/{user_id}")
-async def delete_user(user_id):
-
-	try:
-		auth.delete_user(user_id)
-	except firebase_admin._auth_utils.UserNotFoundError:
-		raise HTTPException(status_code=400, detail="El usuario no existe")
-	return {'detail' : 'Usuario Corractemente eliminado'}
-
+		fb_user = fl.manual_register(user)
+		return crud.create_user(db = db, user = fb_user)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 
 @app.patch("/disable/{user_id}")
-async def disable_user(user_id):
+def disable_user(user_id, db: Session = Depends(get_db)):
 	try:
-		auth.update_user(user_id, disabled = True)
-	except firebase_admin._auth_utils.UserNotFoundError:
-		raise HTTPException(status_code=400, detail="El usuario no existe")
-	return {'detail' : 'Usuario Corractemente deshabilitado'}
+		fl.disable(user_id)
+		crud.change_enable_status(db = db, uid= user_id,disabled = True)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 
 @app.patch("/enable/{user_id}")
-async def enable_user(user_id):
+def enable_user(user_id, db: Session = Depends(get_db)):
 	try:
-		auth.update_user(user_id, disabled = False)
-	except firebase_admin._auth_utils.UserNotFoundError:
-		raise HTTPException(status_code=400, detail="El usuario no existe")
-	return {'detail' : 'Usuario Corractemente habilitado'}
+		fl.enable(user_id)
+		crud.change_enable_status(db = db, uid= user_id,disabled = False)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 
-#Devuelve la cantidad de usuarios registrados.
-@app.get("/registered_users/")
-async def registered_users():
-	n = 0
-	page = auth.list_users()
-	for user in auth.list_users().iterate_all():
-		n+=1
-	return {'usuarios_registrados': n}
-
-# Devuelve el usuario en base a su token.
-# En caso de que no se encuentre el usuario se devuelve codigo 400.
+# Devuelve el id del usuario en base a su token.
+# En caso de que no se encuentre el usuario se devuelve código 400.
 @app.post("/decode_token/")
-async def decode_token(id_token):
+async def decode_token(id_token:str):
 	try: 
-		decoded_token = auth.verify_id_token(id_token)
-		uid = decoded_token['uid']
-		user = auth.get_user(uid)
-	except firebase_admin._auth_utils.InvalidIdTokenError : 
+		return fl.decode_token(id_token)
+	except BaseException as e : 
 		raise HTTPException(status_code=400, detail="Token no valido")
-	return {	'index': 0,
-				'id'   : user.uid,
-				'mail' : user.email,
-				'name' : user.display_name,
-				'photo' : user.photoURL,
-				'disabled': user.disabled,
-				'admin' : False,
-				'subscription' : 'Regular',
-				'federated' : False
-			}
-
-@app.post("/User/", response_model=schemas.User)
-def insert_user(user_id: string, db: Session = Depends(get_db)):
-	#try:
-	#	user : schemas.User = firebase.get_user(user_id)
-	#except BaseException as e:
-	#	raise HTTPException(status_code=400, detail='error: {0}'.format(e))
-    #return crud.create_user(db=db, user=user)
-
-## Subscriptions CRUD.
-@app.post("/subscriptions/", response_model=schemas.Subscription)
-def create_subscription(sub: schemas.SubscriptionBase, db: Session = Depends(get_db)):
-    return crud.create_subscription(db=db, sub=sub)
-
-@app.get("/subscriptions/", response_model = List[schemas.Subscription] )
-def read_subscriptions (skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    return crud.get_subscriptions (db=db, skip = skip , limit = 100)
-
-@app.delete("/subscriptions/", response_model = List[schemas.Subscription] )
-def del_subscriptions (id: int ,db: Session = Depends(get_db) ):
-    crud.delete_subscription (db = db, id = id)
-'''
