@@ -1,7 +1,9 @@
 import firebase_admin
 from   firebase_admin import auth
 from   firebase_admin import credentials
+from sqlalchemy.orm import Session
 from .  import schemas
+from . import crud
 import os
 
 cred = credentials.Certificate({
@@ -30,3 +32,32 @@ def get_user (uid):
         admin = False,
         federated=False #Queda pendiente esta Query
                 )
+async def delete_user(uid):
+    auth.delete_user(uid)
+
+
+def sync_users(db : Session):
+    page = auth.list_users()
+    for user in auth.list_users().iterate_all():
+        db_user = crud.get_user(db = db, uid = user.uid)
+        if( db_user == None ):
+            crud.create_user(db = db, user = schemas.User(
+                                            uid = user.uid,
+                                            email=user.email,
+                                            name=user.display_name,
+                                            subscription= 'Regular',
+                                            disabled =  bool(user.disabled),
+                                            admin = False,
+                                            federated=False #Queda pendiente esta Query
+            ))
+        else:
+            crud.update_user(db = db,
+                            user = schemas.UserBase(
+                                    name=user.display_name,
+                                    subscription= 'Regular',
+                                    disabled =  bool(user.disabled),
+                                    admin = False,
+                                    federated=False #Queda pendiente esta Query,
+                                ),
+                                uid= user.uid
+            )

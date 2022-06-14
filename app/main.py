@@ -30,7 +30,7 @@ def read_root():
 	return {"msg": "Servicio de Usuarios"}
 
 @app.get("/users/{user_id}")
-def get_user(user_id, db: Session = Depends(get_db)):
+def get_user(user_id : str, db: Session = Depends(get_db)):
 	try:
 		user = crud.get_user(db = db, uid = user_id)
 	except BaseException as e:
@@ -38,16 +38,65 @@ def get_user(user_id, db: Session = Depends(get_db)):
 	return user
 
 @app.put("/users/{user_id}")
-def put_user(user_id, db: Session = Depends(get_db)):
+def put_user(user_id: str, db: Session = Depends(get_db)):
 	try:
 		user = fl.get_user(user_id)
 		user = crud.get_user(db = db, uid= user_id)
-		print(user)
 		if ( user == None ) :
 			user = crud.create_user(db = db, user = user)
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 	return user
+
+@app.get("/users/")
+def get_users(skip : int = 0 , limit : int  = 100, db : Session = Depends(get_db)):
+	if ( (skip < 0) or (limit < 0) ):
+		raise HTTPException(status_code=400, detail="El offset y el limite tienen que ser positivos")
+	try:
+		return crud.get_users(db = db, skip = skip, limit = limit)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+
+@app.get("/count_users/")
+def count_users( db : Session = Depends(get_db) ):
+	try:
+		return crud.count_users(db = db)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+
+@app.post("/syncFB/")
+def sync_with_firebase( db : Session = Depends(get_db) ):
+	try:
+		fl.sync_users(db = db)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+
+@app.delete("/users/{user_id}")
+def delete_user(user_id : str, db: Session = Depends(get_db)):
+	try:
+		fl.delete_user(uid = user_id)
+		user = crud.delete_user(db = db, uid = user_id)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+	return user
+
+@app.delete("/users/{user_id}")
+def delete_user(user_id : str, db: Session = Depends(get_db)):
+	try:
+		fl.delete_user(uid = user_id)
+		user = crud.delete_user(db = db, uid = user_id)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+	return user
+
+@app.patch("/user/admin_status/{user_id}")
+def change_admin(user_id : str, admin:bool, db: Session = Depends(get_db)):
+	try:
+		user = crud.change_admin(db = db, uid = user_id, admin)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+	return user
+
 
 '''
 @app.get("/users/")
