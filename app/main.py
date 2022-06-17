@@ -123,12 +123,22 @@ def disable_user(user_id, db: Session = Depends(get_db)):
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 
 @app.patch("/enable/{user_id}")
-def enable_user(user_id, db: Session = Depends(get_db)):
+def enable_user(user_id : str, db: Session = Depends(get_db)):
 	try:
 		fl.enable(user_id)
 		crud.change_enable_status(db = db, uid= user_id,disabled = False)
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+
+
+@app.post("/users/follow")
+def manual_register(user_id : str, user_id_to_follow : str, db: Session = Depends(get_db)):
+	try:
+		
+		crud.follow(db = db, user_id= user_id, user_id_to_follow=user_id_to_follow)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+
 
 # Devuelve el id del usuario en base a su token.
 # En caso de que no se encuentre el usuario se devuelve código 400.

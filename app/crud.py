@@ -1,6 +1,8 @@
 from statistics import mode
+from pyparsing import FollowedBy
 from sqlalchemy.orm import Session
 from . import models, schemas
+from sqlalchemy import insert
 
 #Users
 def get_user(db : Session, uid : str):
@@ -47,3 +49,12 @@ def change_disable_status(db :Session, uid: str, disabled : bool):
     db.query(models.User).filter(models.User.uid == uid)\
         .update({models.User.disabled : disabled})
     db.commit()
+
+def follow (db: Session, user_id : str, user_id_to_follow : str ) :
+    user_db = db.query(models.User).filter(models.User.uid == user_id).first()
+    user_db.following.append(user_id_to_follow)
+    db.commit()
+    return db.query(models.User).filter(models.User.uid == user_id).first()
+    '''db.query(models.User).filter(models.User.uid == user_id)\
+        .update({models.User.following : user_id_to_follow})
+    db.commit()'''

@@ -1,5 +1,6 @@
-from typing import Union
+from typing import Union,List
 from pydantic import BaseModel
+from pyparsing import FollowedBy
 from sqlalchemy import union
 
 class UserToRegister(BaseModel):
