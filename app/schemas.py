@@ -1,7 +1,13 @@
-from typing import Union,List
+from typing import Union, List
 from pydantic import BaseModel
 from pyparsing import FollowedBy
 from sqlalchemy import union
+
+class UserReduced(BaseModel):
+    uid : str # Firebase user id
+    email: str
+    name: Union[str, None] = None
+    photo_url : Union[str, None] = None
 
 class UserToRegister(BaseModel):
     name: Union[str, None] = None
@@ -15,7 +21,9 @@ class UserBase(BaseModel):
     admin : bool
     disabled : bool
     photo_url : Union[str, None] = None
-    
+    following: List[UserReduced] = []
+    followers: List[UserReduced] = []
+
 class User(UserBase):
     uid : str # Firebase user id
     email : str

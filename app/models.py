@@ -11,7 +11,6 @@ followingTable = Table(
     Column("following_uid", ForeignKey("users.uid"), primary_key=True),
 )
 
-
 class User(Base):
     __tablename__ = 'users'
 

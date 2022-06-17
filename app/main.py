@@ -33,10 +33,17 @@ def read_root():
 @app.get("/users/{user_id}")
 def get_user(user_id : str, db: Session = Depends(get_db)):
 	try:
-		user = crud.get_user(db = db, uid = user_id)
+		user : schemas.User = crud.get_user(db = db, uid = user_id)
+	except BaseException as e:
+		raise HTTPException(status_code=404, detail='error: {0}'.format(e))
+	return user
+
+@app.get("/users/")
+def get_users(skip : int = 0 , limit : int  = 100, db : Session = Depends(get_db)):
+	try:
+		return crud.get_users(db = db, skip = skip, limit = limit)
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
-	return user
 
 @app.put("/users/{user_id}")
 def put_user(user_id: str, db: Session = Depends(get_db)):
@@ -49,14 +56,7 @@ def put_user(user_id: str, db: Session = Depends(get_db)):
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 	return user
 
-@app.get("/users/")
-def get_users(skip : int = 0 , limit : int  = 100, db : Session = Depends(get_db)):
-	if ( (skip < 0) or (limit < 0) ):
-		raise HTTPException(status_code=400, detail="El offset y el limite tienen que ser positivos")
-	try:
-		return crud.get_users(db = db, skip = skip, limit = limit)
-	except BaseException as e:
-		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+
 
 @app.get("/count_users/")
 def count_users( db : Session = Depends(get_db) ):
@@ -138,12 +138,19 @@ def follow_user(user_id : str, user_id_to_follow : str, db: Session = Depends(ge
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 
+@app.post("/users/unfollow")
+def unfollow_user(user_id : str, user_id_to_unfollow : str, db: Session = Depends(get_db)):
+	try:
+		return crud.unfollow(db = db, user_id= user_id, user_id_to_unfollow=user_id_to_unfollow)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+
 
 # Devuelve el id del usuario en base a su token.
 # En caso de que no se encuentre el usuario se devuelve código 400.
 @app.post("/decode_token/")
 async def decode_token(id_token:str):
-	try: 
+	try:
 		return fl.decode_token(id_token)
 	except BaseException as e : 
 		raise HTTPException(status_code=400, detail="Token no valido")
