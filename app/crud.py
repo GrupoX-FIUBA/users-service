@@ -41,13 +41,14 @@ def get_user(db : Session, uid : str):
 def get_users(db: Session, skip : int, limit : int) :
     return db.query(models.User).offset(skip).limit(limit).all()
 
-
 def create_user(db: Session, user : schemas.User):
-    db_user = models.User(**user.dict())
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
+    db_user = db.query(models.User).filter(models.User.uid == user.uid).first()
+    if( db_user == None ): #Si el usuario no esta cargado lo creo.
+        db_user = models.User(**user.dict())
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+    return dbUser_to_schemaUser(db_user)
 
 def delete_user(db: Session, uid : str):
     db.query(models.User).filter(models.User.uid == uid).delete()

@@ -45,6 +45,7 @@ def get_users(skip : int = 0 , limit : int  = 100, db : Session = Depends(get_db
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 
+#Usuario ya se debe encontrar cargado en FireBase
 @app.put("/users/{user_id}")
 def put_user(user_id: str, db: Session = Depends(get_db)):
 	try:
@@ -55,8 +56,6 @@ def put_user(user_id: str, db: Session = Depends(get_db)):
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 	return user
-
-
 
 @app.get("/count_users/")
 def count_users( db : Session = Depends(get_db) ):
