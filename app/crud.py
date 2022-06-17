@@ -50,11 +50,14 @@ def change_disable_status(db :Session, uid: str, disabled : bool):
         .update({models.User.disabled : disabled})
     db.commit()
 
-def follow (db: Session, user_id : str, user_id_to_follow : str ) :
+def follow (db: Session, user_id : str, user_id_to_follow : str ):
+
+    if (user_id == user_id_to_follow):
+        raise Exception("Un usuario no se puede seguir asi mismo")
     user_db = db.query(models.User).filter(models.User.uid == user_id).first()
-    user_db.following.append(user_id_to_follow)
+    user_to_follow = db.query(models.User).filter(models.User.uid == user_id_to_follow).first()
+    user_db.following.append(user_to_follow)
     db.commit()
+
+def get_followers(db: Session, user_id : str):
     return db.query(models.User).filter(models.User.uid == user_id).first()
-    '''db.query(models.User).filter(models.User.uid == user_id)\
-        .update({models.User.following : user_id_to_follow})
-    db.commit()'''

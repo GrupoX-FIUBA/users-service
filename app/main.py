@@ -132,10 +132,9 @@ def enable_user(user_id : str, db: Session = Depends(get_db)):
 
 
 @app.post("/users/follow")
-def manual_register(user_id : str, user_id_to_follow : str, db: Session = Depends(get_db)):
+def follow_user(user_id : str, user_id_to_follow : str, db: Session = Depends(get_db)):
 	try:
-		
-		crud.follow(db = db, user_id= user_id, user_id_to_follow=user_id_to_follow)
+		return crud.follow(db = db, user_id= user_id, user_id_to_follow=user_id_to_follow)
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 
@@ -148,3 +147,11 @@ async def decode_token(id_token:str):
 		return fl.decode_token(id_token)
 	except BaseException as e : 
 		raise HTTPException(status_code=400, detail="Token no valido")
+
+@app.get("/users/{user_id}/followers/")
+def get_followers(user_id : str, db: Session = Depends(get_db)):
+	try:
+		user = crud.get_user(db = db, uid = user_id)
+	except BaseException as e:
+		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+	return user.following
