@@ -1,7 +1,9 @@
-from typing import List
+from typing import List, Union
+from unicodedata import name
 from sqlalchemy.orm import Session
 from . import models, schemas
 import json
+from sqlalchemy import func
 
 def dbUser_to_schemaUser (db_user : models.User):
     schema_user = schemas.User(
@@ -42,8 +44,17 @@ def get_user(db : Session, uid : str):
         raise Exception("User not found")
     return dbUser_to_schemaUser(db_user)
 
-def get_users(db: Session, skip : int, limit : int) :
-    return db.query(models.User).offset(skip).limit(limit).all()
+def get_users(db: Session, skip : int, limit : int,
+             name_filter : Union[str, None], email_filter : Union[str, None]):
+    
+    query = db.query(models.User)
+    if (name_filter != None):
+        query = query.filter(models.User.name.ilike("%{}%".format(name_filter)))
+    if (email_filter != None):
+        query = query.filter(models.User.email.ilike("%{}%".format(email_filter)))
+        
+    return query.offset(skip).limit(limit).all()
+   
 
 def create_user(db: Session, user : schemas.User):
     db_user = db.query(models.User).filter(models.User.uid == user.uid).first()

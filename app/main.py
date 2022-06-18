@@ -2,8 +2,7 @@ import string
 import xdrlib
 from pydantic import BaseModel
 from fastapi  import FastAPI, HTTPException, Depends
-from typing import List
-from sqlalchemy import false
+from typing import List, Union
 from sqlalchemy.orm import Session
 from . import crud, models, schemas
 
@@ -55,9 +54,18 @@ def get_user(user_id : str, db: Session = Depends(get_db)):
 	return user
 
 @app.get("/users/", tags=["Getters"])
-def get_users(skip : int = 0 , limit : int  = 100, db : Session = Depends(get_db)):
+def get_users(
+				db : Session = Depends(get_db),
+				skip : int = 0,
+				limit : int  = 100,
+				name_filter : Union[str, None] = None,
+				email_filter : Union[str, None] = None,
+				):
 	try:
-		return crud.get_users(db = db, skip = skip, limit = limit)
+		return crud.get_users(db = db, skip = skip,
+					 			limit = limit,
+							 	name_filter = name_filter,
+								email_filter = email_filter)
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 
@@ -68,7 +76,6 @@ def count_users( db : Session = Depends(get_db) ):
 		return crud.count_users(db = db)
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
-
 
 #Usuario ya se debe encontrar cargado en FireBase
 @app.put("/users/{user_id}", tags=["Interacciones de Usuario"])
