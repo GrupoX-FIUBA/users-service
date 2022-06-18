@@ -1,14 +1,6 @@
-from email import feedparser
-import email
-from statistics import mode
-from tkinter import N
 from typing import List
-from pyparsing import FollowedBy
 from sqlalchemy.orm import Session
-
-from app.firebase_logic import disable
 from . import models, schemas
-from sqlalchemy import insert
 import json
 
 def dbUser_to_schemaUser (db_user):
