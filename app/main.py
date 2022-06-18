@@ -133,11 +133,11 @@ def change_photo(user_id : str, photo:str, db: Session = Depends(get_db)):
 @app.patch("/disabled_status/{user_id}", tags=["Administrador"])
 def change_disabled_user(user_id : str, disabled : bool, db: Session = Depends(get_db)):
 	try:
-		if (disabled):
+		if (disabled == True):
 			fl.disable(user_id)
 		else:	
 			fl.enable(user_id)
-		crud.change_enable_status(db = db, uid= user_id,disabled = disabled)
+		return crud.change_disable_status(db = db, uid= user_id,disabled = disabled)
 	except BaseException as e:
 		raise HTTPException(status_code=404, detail='error: {0}'.format(e))
 

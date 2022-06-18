@@ -71,7 +71,7 @@ def disable(uid : str):
     auth.update_user(uid, disabled = True)
 
 def enable(uid : str):
-    auth.update_user(uid, disabled = false)
+    auth.update_user(uid, disabled = False)
 
 def decode_token(id_token:str):
     decoded_token = auth.verify_id_token(id_token)
