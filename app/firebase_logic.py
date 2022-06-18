@@ -39,9 +39,7 @@ async def delete_user(uid):
 def sync_users(db : Session):
     page = auth.list_users()
     for user in auth.list_users().iterate_all():
-        db_user = crud.get_user(db = db, uid = user.uid)
-        if( db_user == None ):
-            crud.create_user(db = db, user = schemas.User(
+        crud.create_user(db = db, user = schemas.User(
                                             uid = user.uid,
                                             email=user.email,
                                             name=user.display_name,
@@ -51,18 +49,7 @@ def sync_users(db : Session):
                                             federated=False, #Queda pendiente esta Query
                                             photo_url=user.photo_url
             ))
-        else:
-            crud.update_user(db = db,
-                            user = schemas.UserBase(
-                                    name=user.display_name,
-                                    subscription= db_user.subscription,
-                                    disabled =  bool(user.disabled),
-                                    admin = db_user.admin,
-                                    federated=False, #Queda pendiente esta Query,
-                                    photo_url = db_user.photo_url,
-                                ),
-                                uid= user.uid
-            )
+
 def manual_register(user : schemas.UserToRegister):
     user_fb = auth.create_user(
         email= user.email,

@@ -1,6 +1,5 @@
-from typing import Union, List
+from typing import Union, List, Optional
 from pydantic import BaseModel
-from pyparsing import FollowedBy
 from sqlalchemy import union
 
 class UserReduced(BaseModel):
@@ -23,6 +22,7 @@ class UserBase(BaseModel):
     photo_url : Union[str, None] = None
     following: List[UserReduced] = []
     followers: List[UserReduced] = []
+    genres : List[int] = []
 
 class User(UserBase):
     uid : str # Firebase user id

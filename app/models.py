@@ -1,3 +1,4 @@
+from multiprocessing.dummy import Array
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
 
 from sqlalchemy.orm import declarative_base, relationship
@@ -27,3 +28,4 @@ class User(Base):
                                 primaryjoin=uid==followingTable.c.uid,
                                 secondaryjoin=uid==followingTable.c.following_uid,
                                 backref="followers")
+    genres = Column(String, unique=False)
