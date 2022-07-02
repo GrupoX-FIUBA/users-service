@@ -1,5 +1,7 @@
 import string
 import xdrlib
+
+import requests
 from pydantic import BaseModel
 from fastapi  import FastAPI, HTTPException, Depends
 from typing import List, Union
@@ -82,6 +84,9 @@ def count_users( db : Session = Depends(get_db) ):
 def put_user(user_id: str, db: Session = Depends(get_db)):
 	try:
 		fb_user = fl.get_user(user_id)
+		requests.post("https://spotifiuby-payments-service.herokuapp.com/wallet",
+					data={'user_id': fb_user.uid},
+			 		headers={'X-API-Key': '9bcdae8ebc2a970a365103a52da830f3958f4f381fcfd544f7c0452ee09dba00'})
 		user = crud.create_user(db = db, user = fb_user)
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
@@ -92,6 +97,9 @@ def put_user(user_id: str, db: Session = Depends(get_db)):
 def manual_register(user : schemas.UserToRegister, db: Session = Depends(get_db)):
 	try:
 		fb_user = fl.manual_register(user)
+		requests.post("https://spotifiuby-payments-service.herokuapp.com/wallet",
+			 data={'user_id': fb_user.uid},
+			 headers={'X-API-Key': '9bcdae8ebc2a970a365103a52da830f3958f4f381fcfd544f7c0452ee09dba00'})
 		return crud.create_user(db = db, user = fb_user)
 	except BaseException as e:
 		raise HTTPException(status_code=400, detail='error: {0}'.format(e))
@@ -184,6 +192,7 @@ def decode_token(id_token:str, db: Session = Depends(get_db)):
 		return crud.get_user (db=db, uid=fl.decode_token(id_token))
 	except BaseException as e : 
 		raise HTTPException(status_code=400, detail="Token no valido")
+
 '''
 @app.post("/syncFB/")
 def sync_with_firebase( db : Session = Depends(get_db) ):
