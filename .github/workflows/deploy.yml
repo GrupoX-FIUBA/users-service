@@ -28,7 +28,6 @@ jobs:
           tags: |
             ghcr.io/${{ secrets.DOCKER_REPOSITORY }}/${{ secrets.APP_NAME }}:latest
             ghcr.io/${{ secrets.DOCKER_REPOSITORY }}/${{ secrets.APP_NAME }}:${{ github.sha }}
-          target: production
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
