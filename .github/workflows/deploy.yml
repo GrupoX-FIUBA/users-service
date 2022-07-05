@@ -55,6 +55,7 @@ jobs:
           FB_PRIVATE_KEY_ID: ${{ secrets.FB_PRIVATE_KEY_ID }}
           FB_CLIENT_EMAIL: ${{ secrets.FB_CLIENT_EMAIL }}
           FB_CLIENT_ID: ${{ secrets.FB_CLIENT_ID }}
+          WALLET_API_KEY: ${{ secrets.WALLET_API_KEY }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
           DB_NAME: "usersdb"  # or ${{ secrets.DB_NAME }}

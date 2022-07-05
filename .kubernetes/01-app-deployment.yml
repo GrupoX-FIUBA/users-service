@@ -70,3 +70,5 @@ spec:
           value: "__FB_CLIENT_MAIL__"
         - name: FB_CLIENT_ID
           value: "__FB_CLIENT_ID__"
+        - name: WALLET_API_KEY
+          value: "__WALLET_API_KEY__"
