@@ -52,6 +52,9 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           API_KEY: ${{ secrets.USERS_SERVICE_API_KEY }}
           DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          FB_PRIVATE_KEY_ID: ${{ secrets.FB_PRIVATE_KEY_ID }}
+          FB_CLIENT_EMAIL: ${{ secrets.FB_CLIENT_EMAIL }}
+          FB_CLIENT_ID: ${{ secrets.FB_CLIENT_ID }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
           DB_NAME: "usersdb"  # or ${{ secrets.DB_NAME }}
