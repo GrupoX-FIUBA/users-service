@@ -1,0 +1,66 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: __APP_NAME__
+  annotations:
+    dev.okteto.com/auto-ingress: "true"
+spec:
+  type: ClusterIP
+  ports:
+  - name: "__APP_NAME__"
+    port: 8080
+  - name: "datadog-tcp"
+    port: 8126
+  - name: "datadog-udp"
+    port: 8125
+    protocol: "UDP"
+  selector:
+    app: __APP_NAME__
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: __APP_NAME__
+  labels:
+    app: __APP_NAME__
+spec:
+  selector:
+    matchLabels:
+      app: __APP_NAME__
+      tier: application
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: __APP_NAME__
+        tier: application
+    spec:
+      initContainers:
+      - name: wait-db
+        image: postgres:14.4
+        command: ['sh', '-c', 'until pg_isready -h postgresql-svc -p 5432; do echo waiting for database; sleep 2; done;']
+      containers:
+      - image: "ghcr.io/__DOCKER_REPOSITORY__/__APP_NAME__:__IMAGE_TAG__"
+        name: __APP_NAME__
+        env:
+        - name: DATABASE_URL    
+          value: "postgres://__DB_USER__:__DB_PASS__@postgresql-svc:5432/__DB_NAME__"
+        - name: PORT
+          value: "8080"
+        - name: X_API_KEY
+          value: "__API_KEY__"
+        - name: DD_API_KEY
+          value: "__DD_API_KEY__"
+        - name: DD_SITE
+          value: "datadoghq.com"
+        - name: DD_DYNO_HOST
+          value: "true"
+        - name: DD_APM_ENABLED
+          value: "true"
+        - name: DD_DOGSTATSD_NON_LOCAL_TRAFFIC
+          value: "true"
+        - name: DD_LOGS_ENABLED
+          value: "true"
+        - name: DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL
+          value: "true"
