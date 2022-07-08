@@ -12,7 +12,7 @@ import app.utils.firebase_logic as fl
 
 
 router = APIRouter(
-    prefix = "/users",
+    #prefix = "",
 )
 
 
