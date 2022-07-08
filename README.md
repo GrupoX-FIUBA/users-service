@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/gh/GrupoX-FIUBA/music-service/branch/main/graph/badge.svg?token=VXS3E2BKR7)](https://codecov.io/gh/GrupoX-FIUBA/users-service)
+[![codecov](https://codecov.io/gh/GrupoX-FIUBA/users-service/branch/main/graph/badge.svg?token=VXS3E2BKR7)](https://codecov.io/gh/GrupoX-FIUBA/users-service)
 
 # User Microservice
 
