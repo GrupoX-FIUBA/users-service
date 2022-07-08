@@ -2,4 +2,4 @@
 pytest
 requests
 flake8
-ddtrace
+pytest-cov

@@ -1,8 +1,10 @@
 version: '3'
 
 services:
-  fastapi:
-    build: .
+  production:
+    build:
+      context: .
+      target: production
     container_name: users-service-fastapi
     ports:
       - ${PORT:-8000}:${PORT:-8000}
@@ -10,6 +12,8 @@ services:
       - "8126:8126/tcp" # DD
     environment:
       - PORT=${PORT:-8000}
+      - DATABASE_URL
+      - X_API_KEY
       - DD_API_KEY=${DD_API_KEY}
       - DD_SITE=datadoghq.com
       - DD_DYNO_HOST=true
@@ -18,10 +22,72 @@ services:
       - DD_LOGS_ENABLED=true
       - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
 
-      - FB_PRIVATE_KEY_ID={$FB_PRIVATE_KEY_ID}
-      - FB_CLIENT_EMAIL={$FB_CLIENT_EMAIL}
-      - FB_CLIENT_ID={$FB_CLIENT_ID}
+      - FB_PRIVATE_KEY_ID=${FB_PRIVATE_KEY_ID}
+      - FB_CLIENT_EMAIL=${FB_CLIENT_EMAIL}
+      - FB_CLIENT_ID=${FB_CLIENT_ID}
+    profiles:
+      - prod
     volumes:
      - /var/run/docker.sock:/var/run/docker.sock
      - /proc/:/host/proc/:ro
      - /sys/fs/cgroup:/host/sys/fs/cgroup:ro
+
+  development:
+    build:
+      context: .
+      target: development
+    container_name: users-service-development
+    ports:
+      - ${PORT:-8000}:${PORT:-8000}
+    environment:
+      PORT: ${PORT:-8000}
+      DATABASE_URL: "postgresql://postgres:postgres@db:5432"
+      DEBUG: 1
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app:/code/app
+      - ./alembic/versions:/code/alembic/versions
+    profiles:
+      - dev
+
+  test:
+    build:
+      context: .
+      target: test
+    container_name: users-service-test
+    environment:
+      DATABASE_URL: "postgresql://postgresl:postgres@db:5432"
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app:/code/app
+      - ./alembic/versions:/code/alembic/versions
+      - ./coverage:/code/coverage
+    profiles:
+      - test
+
+  db:
+    image: postgres:14-alpine
+    container_name: users-service-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "none"
+    volumes:
+      - ./psql_data:/var/lib/postgresql/data
+    profiles:
+      - dev
+      - test

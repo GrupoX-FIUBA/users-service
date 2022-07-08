@@ -1,47 +1,28 @@
-# Template repository for FastAPI microservices
+[![codecov](https://codecov.io/gh/GrupoX-FIUBA/music-service/branch/main/graph/badge.svg?token=VXS3E2BKR7)](https://codecov.io/gh/GrupoX-FIUBA/music-service)
 
-This is a template to use as a starting point for FastAPI microservice repositories. Once configured, it will run the tests on every pull request to `main`, and will automatically deploy to corresponding Heroku app when a push to `main` occurs.
+# User Microservice
 
-## To Do after fork/create-from-template
-
-Simply go to the repository settings, _Actions secrets_ and create a new _repository secret_ with name `HEROKU_APP_NAME` and the name of the Heroku app in the _value_ field.
-
-In the `app` directory there's a very simple example of a FastAPI app with tests.
+This microservice manages the users related topics.
 
 ## Local development
 
-To run the application there are two options:
+- First, create a `.env` file to reduce commands length, setting up the COMPOSE_PROFILES variable to "dev" (`echo COMPOSE_PROFILES=dev >> .env`). Also, put there the necessary `FB_` env variables.
+- It's also recommended to build the container after a pull: `docker-compose build`.
+- Then you can run the app: `docker-compose up`. It will also run a postgres container for development.
 
-### With Docker
+The app will start at port 8000 as default. You can use a specific port by setting the PORT env variable either at the `.env` file or within each command.
 
-Run `docker-compose up` to start the app in port 8000 or `PORT=xxxx docker-compose up` to use a specific `xxxx` port.
+### Changes to database models
 
-### With _virtualenv_
+To create database migrations for changes done in _models_ files, run `docker-compose exec development alembic revision --autogenerate -m "Title of migration"`.
 
-- First of all create a _virtualenv_ (_i.e._ `python3 -m venv venv`) and activate it (`source venv/bin/activate`).
-- Upgrade pip and install the dependencies: `pip install --upgrade pip && pip install -r requirements.txt`.
-- Run the app with:
-	```bash
-	uvicorn app.main:app --host 0.0.0.0 --port 8000
-	```
+To apply changes to existing-running container, you can either restart it (`docker-compose restart`) or run the migrations (`docker-compose exec development alembic upgrade head`).
 
 ## Tests
 
-Again, there are two options. Note that the _virtualenv_ option is naturally faster.
+To run the tests, simply execute `docker-compose --profile test up`. You can add `--exit-code-from test` to pass the exit code of the test script to the shell session.
 
-### With Docker
-
-Run the command:
-
-```bash
-docker-compose run --rm fastapi sh -c "pip install -q -q -r /code/requirements.dev.txt && sh /code/test.sh"
-```
-
-### With _virtualenv_
-
-- Be sure to be in the virtual environment, if not, activate it (_i.e._ `source venv/bin/activate`).
-- The first time, install the dev dependencies: `pip install -r requirements.dev.txt`.
-- Run the linter and tests with `./test.sh`.
+Again, it's recommended to build the container after a pull. In this case, you must build with the _test_ profile: `docker-compose --profile test build`.
 
 ## Docs
 
