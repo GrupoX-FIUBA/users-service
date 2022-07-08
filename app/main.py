@@ -18,7 +18,7 @@ import os
 
 #Seguridad
 API_KEY = os.environ.get("API_KEY")
-API_KEY_NAME = "access_token"
+API_KEY_NAME = "X-API-Key"
 
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 async def get_api_key(
