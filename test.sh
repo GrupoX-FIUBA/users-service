@@ -1,5 +1,7 @@
 #!/bin/sh
 
+alembic upgrade head
+
 echo -e "\033[0;34mRunning Flake8 Linter...\033[0m"
 
 FLAKE=`flake8 --ignore=W191 app/`
@@ -28,5 +30,7 @@ fi
 if [ "$FLAKE_CODE" -ne "0" -o "$PYTEST_CODE" -ne "0" ]; then
 	exit 1
 fi
+
+pytest --cov app/ --cov-report=xml:coverage/coverage.xml >/dev/null
 
 exit 0

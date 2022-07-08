@@ -1,7 +1,8 @@
 from typing import List, Union
 from unicodedata import name
 from sqlalchemy.orm import Session
-from . import models, schemas
+from app.models import users as models
+from app.schemas import users as schemas
 import json
 from sqlalchemy import func
 

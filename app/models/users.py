@@ -1,9 +1,8 @@
-from multiprocessing.dummy import Array
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Table
+from sqlalchemy import Boolean, Column, ForeignKey, String, Table
+from sqlalchemy.orm import relationship
 
-from sqlalchemy.orm import declarative_base, relationship
+from app.db.base_class import Base
 
-from .database import Base
 
 followingTable = Table(
     "followers",
@@ -11,6 +10,7 @@ followingTable = Table(
     Column("uid", ForeignKey("users.uid"), primary_key=True),
     Column("following_uid", ForeignKey("users.uid"), primary_key=True),
 )
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -24,8 +24,8 @@ class User(Base):
     subscription = Column(String, unique=False, default = "Regular")
     photo_url = Column(String, unique=False)
     following = relationship("User",
-                                secondary = followingTable,
-                                primaryjoin=uid==followingTable.c.uid,
-                                secondaryjoin=uid==followingTable.c.following_uid,
-                                backref="followers")
+                             secondary = followingTable,
+                             primaryjoin=uid == followingTable.c.uid,
+                             secondaryjoin=uid == followingTable.c.following_uid,
+                             backref="followers")
     genres = Column(String, unique=False)

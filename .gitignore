@@ -7,3 +7,7 @@ __pycache__/
 
 *.json
 *.env
+
+db.sqlite3
+psql_data/
+coverage/

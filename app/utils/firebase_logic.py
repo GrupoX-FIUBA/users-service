@@ -5,8 +5,8 @@ from firebase_admin import credentials
 from firebase_admin import db
 from sqlalchemy import false
 from sqlalchemy.orm import Session
-from . import schemas
-from . import crud
+from app.schemas import users as schemas
+from app.cruds import users as crud
 import os
 
 cred = credentials.Certificate({

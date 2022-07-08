@@ -1,4 +1,36 @@
-FROM python:3.9-slim
+FROM python:3.9-slim as base
+
+WORKDIR /code
+
+COPY ./requirements.txt ./requirements.txt
+COPY ./alembic.ini ./alembic.ini
+COPY ./alembic ./alembic
+
+RUN pip install --upgrade pip
+RUN pip install -r ./requirements.txt
+
+
+# Test stage
+FROM base as test
+
+COPY ./requirements.dev.txt ./requirements.dev.txt
+COPY ./test.sh ./test.sh
+
+RUN pip install -r ./requirements.dev.txt
+
+CMD sh test.sh
+
+
+# Dev stage
+FROM base as development
+
+COPY ./start.sh ./start.sh
+
+CMD sh start.sh
+
+
+# Prod stage
+FROM base as production
 
 # Install Heroku GPG dependencies
 RUN apt-get update \
@@ -8,13 +40,6 @@ RUN apt-get update \
 COPY heroku/datadog-config/ /etc/datadog-agent/
 
 COPY heroku/start.sh /code/start.sh
-
-COPY ./requirements.txt /code/requirements.txt
-COPY ./requirements.dev.txt /code/requirements.dev.txt
-COPY ./test.sh /code/test.sh
-
-RUN pip install --upgrade pip
-RUN pip install -r /code/requirements.txt
 
 # Add Datadog repository and signing keys
 ENV DATADOG_APT_KEYRING="/usr/share/keyrings/datadog-archive-keyring.gpg"
@@ -34,9 +59,7 @@ RUN apt-get update && apt-get -y --force-yes install --reinstall datadog-agent
 # Expose DogStatsD and trace-agent ports
 EXPOSE 8125/udp 8126/tcp
 
-COPY ./app /code/app
-
-WORKDIR /code
+COPY ./app ./app
 
 # Use app entrypoint
 CMD ["bash", "start.sh"]
