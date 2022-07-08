@@ -1,9 +1,11 @@
+from datetime import datetime
 import firebase_admin
-from   firebase_admin import auth
-from   firebase_admin import credentials
+from firebase_admin import auth
+from firebase_admin import credentials
+from firebase_admin import db
 from sqlalchemy import false
 from sqlalchemy.orm import Session
-from .  import schemas
+from . import schemas
 from . import crud
 import os
 
@@ -20,7 +22,7 @@ cred = credentials.Certificate({
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-3povb%40spotifiuby-bc6da.iam.gserviceaccount.com"
 })
 
-firebase_admin.initialize_app(cred)
+firebase_admin.initialize_app(cred, { "databaseURL" : "https://spotifiuby-bc6da-default-rtdb.firebaseio.com/" })
 
 def get_user (uid):
     user_fb = auth.get_user(uid)
@@ -31,8 +33,8 @@ def get_user (uid):
         subscription= 'Regular',
         disabled =  bool(user_fb.disabled),
         admin = False,
-        federated=False #Queda pendiente esta Query
-                )
+        federated=user_fb.email_verified #Si el log fue manual esto deberia ser falso.
+        )
 async def delete_user(uid):
     auth.delete_user(uid)
 
@@ -46,8 +48,8 @@ def sync_users(db : Session):
                                             subscription= 'Regular',
                                             disabled =  bool(user.disabled),
                                             admin = False,
-                                            federated=False, #Queda pendiente esta Query
-                                            photo_url=user.photo_url
+                                            federated=bool(user.email_verified), #Si el log fue manual esto deberia ser falso.
+                                            photo_url=user.photo_url,
             ))
 
 def manual_register(user : schemas.UserToRegister):
@@ -64,7 +66,7 @@ def manual_register(user : schemas.UserToRegister):
         subscription= 'Regular',
         disabled =  bool(user_fb.disabled),
         admin = False,
-        federated=False #Queda pendiente esta Query
+        federated=False #Si el log fue manual esto deberia ser falso.
                 )
 
 def disable(uid : str):
@@ -77,3 +79,49 @@ def decode_token(id_token:str):
     decoded_token = auth.verify_id_token(id_token)
     uid = decoded_token['uid']
     return uid
+
+def notify_password_reseted ():
+    date = datetime.today().strftime('%Y-%m-%d')
+    ref = db.reference('/passwordRecoveries/'+ date)
+    ref.transaction(lambda x: x + 1 if x is not None else 1)
+
+def notify_login_attempt (uid : str):
+    user_fb = auth.get_user(uid)
+    #date = datetime.today().strftime('%Y-%m-%d')
+    date = "2022-07-02"
+    if ( bool(user_fb.email_verified) ):
+        ref = db.reference('/loginAttempts/federated/'+ date)
+        cant = ref.transaction(lambda x: x + 1 if x is not None else 1)
+    else:
+        ref = db.reference('/loginAttempts/manual/'+ date)
+        cant = ref.transaction(lambda x: x + 1 if x is not None else 1)
+
+def get_logins():
+    ref = db.reference('/loginAttempts')
+    return ref.get()
+
+def get_passwords_resets():
+    ref = db.reference('/passwordRecoveries')
+    return ref.get()
+
+def get_singUp_stats():
+    password = 0
+    federated = 0
+    page = auth.list_users()
+    for user in auth.list_users().iterate_all():
+        if(user.email_verified):
+            federated += 1
+        else:
+            password += 1
+    return {'email_password': password, 'federated': federated}
+
+def get_blocked_stats():
+    blocked = 0
+    enabled = 0
+    page = auth.list_users()
+    for user in auth.list_users().iterate_all():
+        if(user.disabled):
+            blocked += 1
+        else:
+            enabled += 1
+    return {'enabled': enabled, 'blocked': blocked}
