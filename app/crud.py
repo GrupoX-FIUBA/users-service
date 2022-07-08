@@ -173,10 +173,3 @@ def del_genre(db: Session, user_id : str, genre_id : int ):
     db_user.genres = json.dumps(genres)
     db.commit()
     return dbUser_to_schemaUser(db_user)
-
-'''
-def update_user(db: Session, user:schemas.UserBase, uid: str ):
-    db.query(models.User).filter(models.User.uid == uid)\
-        .update({**user.dict()})
-    db.commit()
-'''
