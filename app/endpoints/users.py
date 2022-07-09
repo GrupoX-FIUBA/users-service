@@ -262,3 +262,19 @@ def blockedStats():
         return fl.get_blocked_stats()
     except BaseException as e:
         raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+
+
+@router.post("/notificationToken/{user_id}", tags=["Notificaciones"])
+def setNotiToken(user_id: str, token: str):
+    try:
+        return fl.update_noti_token(user_id, token)
+    except BaseException as e:
+        raise HTTPException(status_code=400, detail='error: {0}'.format(e))
+
+
+@router.get("/notificationToken/{user_id}", tags=["Notificaciones"])
+def GetNotiToken(user_id: str):
+    try:
+        return fl.get_noti_token(user_id)
+    except BaseException as e:
+        raise HTTPException(status_code=400, detail='error: {0}'.format(e))

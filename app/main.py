@@ -25,6 +25,10 @@ tags_metadata = [
         "name": "Estadisticas",
         "description": "Operadores para generar y obtener estadisticas",
     },
+    {
+        "name": "Notificaciones",
+        "description": "Operaciones para notificaciones",
+    }
 ]
 
 app = FastAPI(dependencies=[Depends(get_api_key)],

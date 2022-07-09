@@ -142,3 +142,12 @@ def get_blocked_stats():
         else:
             enabled += 1
     return {'enabled': enabled, 'blocked': blocked}
+
+
+def update_noti_token(user_id: str, token: str):
+    db.reference('/NotiTokens/' + user_id).set(token)
+    return token
+
+
+def get_noti_token(user_id: str):
+    return db.reference('/NotiTokens/' + user_id).get()
