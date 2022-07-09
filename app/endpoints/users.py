@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.cruds import users as crud
-from app.models import users as models
 from app.schemas import users as schemas
 from .base import get_db
 
@@ -12,7 +11,7 @@ import app.utils.firebase_logic as fl
 
 
 router = APIRouter(
-    #prefix = "",
+    # prefix = "",
 )
 
 
@@ -201,7 +200,7 @@ def del_genre(user_id: str, genre_id: int, db: Session = Depends(get_db)):
 def decode_token(id_token: str, db: Session = Depends(get_db)):
     try:
         return crud.get_user(db=db, uid=fl.decode_token(id_token))
-    except BaseException as e:
+    except BaseException:
         raise HTTPException(status_code=400, detail="Token no valido")
 
 # Notify that the user has requested to change the password.

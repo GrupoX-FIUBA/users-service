@@ -1,10 +1,8 @@
-from typing import List, Union
-from unicodedata import name
+from typing import Union
 from sqlalchemy.orm import Session
 from app.models import users as models
 from app.schemas import users as schemas
 import json
-from sqlalchemy import func
 
 
 def dbUser_to_schemaUser(db_user: models.User):
