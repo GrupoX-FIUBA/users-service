@@ -7,6 +7,8 @@ __pycache__/
 
 *.json
 *.env
+!firebase/config/firebase.json
+!firebase/config/database.rules.json
 
 db.sqlite3
 psql_data/
