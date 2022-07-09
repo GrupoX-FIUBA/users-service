@@ -21,11 +21,12 @@ class User(Base):
     disabled = Column(Boolean, default=False)
     federated = Column(Boolean, default=False)
     admin = Column(Boolean, default=False)
-    subscription = Column(String, unique=False, default = "Regular")
+    subscription = Column(String, unique=False, default="Regular")
     photo_url = Column(String, unique=False)
-    following = relationship("User",
-                             secondary = followingTable,
-                             primaryjoin=uid == followingTable.c.uid,
-                             secondaryjoin=uid == followingTable.c.following_uid,
-                             backref="followers")
+    following = relationship(
+        "User",
+        secondary=followingTable,
+        primaryjoin=uid == followingTable.c.uid,
+        secondaryjoin=uid == followingTable.c.following_uid,
+        backref="followers")
     genres = Column(String, unique=False)
