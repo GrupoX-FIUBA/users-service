@@ -72,3 +72,5 @@ spec:
           value: "__FB_CLIENT_ID__"
         - name: WALLET_API_KEY
           value: "__WALLET_API_KEY__"
+        - name: PAYMENTS_SERVICE_URL
+            value:"__PAYMENTS_SERVICE_URL__"

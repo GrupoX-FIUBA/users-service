@@ -58,6 +58,7 @@ jobs:
           WALLET_API_KEY: ${{ secrets.WALLET_API_KEY }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
+          PAYMENTS_SERVICE_URL : ${{ secrets.PAYMENTS_SERVICE_URL }}
           DB_NAME: "usersdb"  # or ${{ secrets.DB_NAME }}
 
       - name: Update deployment
