@@ -67,7 +67,7 @@ spec:
         - name: FB_PRIVATE_KEY_ID
           value: "__FB_PRIVATE_KEY_ID__"
         - name: FB_CLIENT_EMAIL
-          value: "__FB_CLIENT_MAIL__"
+          value: "__FB_CLIENT_EMAIL__"
         - name: FB_CLIENT_ID
           value: "__FB_CLIENT_ID__"
         - name: WALLET_API_KEY
