@@ -33,7 +33,7 @@ def get_user(uid):
         uid=uid,
         email=user_fb.email,
         name=user_fb.display_name,
-        subscription='Regular',
+        subscription='None',
         disabled=bool(user_fb.disabled),
         admin=False,
         # Si el log fue manual esto deberia ser falso.
