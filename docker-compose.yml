@@ -43,9 +43,6 @@ services:
     environment:
       PORT: ${PORT:-8000}
       DATABASE_URL: "postgresql://postgres:postgres@db:5432"
-      FIREBASE_AUTH_EMULATOR_HOST: "firebase:9099"
-      FIREBASE_DATABASE_EMULATOR_HOST: "firebase:9000"
-      FIREBASE_STORAGE_EMULATOR_HOST: "firebase:9199"
       DEBUG: 1
     env_file:
       - .env
@@ -65,17 +62,12 @@ services:
     container_name: users-service-test
     environment:
       DATABASE_URL: "postgresql://postgres:postgres@db:5432"
-      FIREBASE_AUTH_EMULATOR_HOST: "firebase:9099"
-      FIREBASE_DATABASE_EMULATOR_HOST: "firebase:9000"
-      FIREBASE_STORAGE_EMULATOR_HOST: "firebase:9199"
       FB_PRIVATE_KEY_ID: ${FB_PRIVATE_KEY_ID}
       FB_CLIENT_EMAIL: ${FB_CLIENT_EMAIL}
       FB_CLIENT_ID: ${FB_CLIENT_ID}
     env_file:
       - .env
     depends_on:
-      firebase:
-        condition: service_healthy
       db:
         condition: service_healthy
     volumes:
@@ -85,20 +77,6 @@ services:
     profiles:
       - test
 
-  firebase:
-    build: firebase
-    container_name: users-service-firebase
-    environment:
-      - FB_TOKEN
-    env_file:
-      - .env
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:4000"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-    profiles:
-      - test
 
   db:
     image: postgres:14-alpine
