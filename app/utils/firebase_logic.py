@@ -72,7 +72,7 @@ def manual_register(user: schemas.UserToRegister):
         uid=user_fb.uid,
         email=user_fb.email,
         name=user_fb.display_name,
-        subscription='Regular',
+        subscription='None',
         disabled=bool(user_fb.disabled),
         admin=False,
         federated=False  # Si el log fue manual esto deberia ser falso.
