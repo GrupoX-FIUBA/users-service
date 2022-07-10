@@ -24,7 +24,7 @@ cred = credentials.Certificate({
 firebase_admin.initialize_app(
     cred,
     {"databaseURL": "https://spotifiuby-bc6da-default-rtdb.firebaseio.com/"}
-    )
+)
 
 
 def get_user(uid):
