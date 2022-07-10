@@ -13,7 +13,6 @@ def test_read_main(client: TestClient, db: Session):
     headers = get_valid_api_key()
     response = client.get("/", headers=headers)
     assert response.status_code == 200
-    #assert response.json() == {"detail": "Permission denied"}
 
 
 def test_read_stat(client: TestClient, db: Session):
@@ -22,10 +21,12 @@ def test_read_stat(client: TestClient, db: Session):
     assert response.status_code == 200
     assert response.json() is None
 
+
 def test_get_users(client: TestClient, db: Session):
     headers = get_valid_api_key()
     response = client.get("/users/", headers=headers)
     assert response.status_code == 200
+
 
 def test_cant_users(client: TestClient, db: Session):
     headers = get_valid_api_key()
