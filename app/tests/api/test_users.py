@@ -15,11 +15,14 @@ def test_read_main(client: TestClient, db: Session):
     assert response.status_code == 200
 
 
-def test_read_stat(client: TestClient, db: Session):
+def test_read_stat(client: TestClient, db: Session, mocker):
+    mocker.patch(
+        "app.utils.firebase_logic.get_passwords_resets",
+        return_value={"5": 5})
     headers = get_valid_api_key()
-    response = client.post("/newPasswordReseted/", headers=headers)
+    response = client.get("/passwordsResets/", headers=headers)
     assert response.status_code == 200
-    assert response.json() is None
+    assert response.json() == {"5": 5}
 
 
 def test_get_users(client: TestClient, db: Session):

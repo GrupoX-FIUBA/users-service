@@ -209,7 +209,7 @@ def decode_token(id_token: str, db: Session = Depends(get_db)):
 @router.post("/newPasswordReseted/", tags=["Estadisticas"])
 def passwordReseted():
     try:
-        fl.get_passwords_resets()
+        fl.notify_password_reseted()
     except BaseException as e:
         raise HTTPException(status_code=400, detail='error: {0}'.format(e))
 
