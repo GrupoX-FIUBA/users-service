@@ -12,6 +12,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      PAYMENTS_SERVICE_URL: ${{ secrets.PAYMENTS_SERVICE_URL }}
+      FB_PRIVATE_KEY_ID: ${{ secrets.FB_PRIVATE_KEY_ID }}
+      FB_CLIENT_EMAIL: ${{ secrets.FB_CLIENT_EMAIL }}
+      FB_CLIENT_ID: ${{ secrets.FB_CLIENT_ID }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
