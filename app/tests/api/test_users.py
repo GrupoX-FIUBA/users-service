@@ -123,6 +123,44 @@ def test_change_admin_status(client: TestClient, db: Session, mocker):
     assert response.json()["admin"]
 
 
+def test_sub_status(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.manual_register",
+        return_value=schemas.User(
+            uid="12345",
+            email="hola@hola.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        None)
+    response = client.post("/manual_register/", headers=headers, json={
+        "name": "Jorge Dinosaurio",
+        "email": "xd",
+        "password": "123",
+    })
+    assert response.status_code == 200
+    assert response.json()["uid"] == "12345"
+
+    #  User Created, now testing the change of subs status
+    response = client.patch(
+        "/user/12345/subscription_status/?subscription=Premium",
+        headers=headers)
+    assert response.status_code == 200
+    assert response.json()["subscription"] == "Premium"
+
+    response = client.patch(
+        "/user/12345/subscription_status/?subscription=Jorge",
+        headers=headers)
+    assert response.status_code == 200
+    assert not response.json()["subscription"] == "Premium"
+
+
 def test_read_stat(client: TestClient, db: Session, mocker):
     mocker.patch(
         "app.utils.firebase_logic.get_passwords_resets",
