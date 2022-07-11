@@ -129,7 +129,7 @@ def test_manual_register_user(client: TestClient, db: Session, mocker):
         ))
     mocker.patch(
         "app.utils.api_wallet.create_wallet",
-        None)
+        return_value=None)
     response = client.post("/manual_register/", headers=headers, json={
         "name": "Jorge Dinosaurio",
         "email": "xd",
@@ -154,7 +154,7 @@ def test_change_admin_status(client: TestClient, db: Session, mocker):
         ))
     mocker.patch(
         "app.utils.api_wallet.create_wallet",
-        None)
+        return_value=None)
     response = client.post("/manual_register/", headers=headers, json={
         "name": "Jorge Dinosaurio",
         "email": "xd",
@@ -193,7 +193,7 @@ def test_sub_status(client: TestClient, db: Session, mocker):
         ))
     mocker.patch(
         "app.utils.api_wallet.create_wallet",
-        None)
+        return_value=None)
     response = client.post("/manual_register/", headers=headers, json={
         "name": "Jorge Dinosaurio",
         "email": "xd",
@@ -214,3 +214,47 @@ def test_sub_status(client: TestClient, db: Session, mocker):
         headers=headers)
     assert response.status_code == 200
     assert not response.json()["subscription"] == "Premium"
+
+
+def test_disabled_status(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.manual_register",
+        return_value=schemas.User(
+            uid="12345",
+            email="hola@hola.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        return_value=None)
+    response = client.post("/manual_register/", headers=headers, json={
+        "name": "Jorge Dinosaurio",
+        "email": "xd",
+        "password": "123",
+    })
+    assert response.status_code == 200
+    assert response.json()["uid"] == "12345"
+
+    mocker.patch(
+        "app.utils.firebase_logic.disable",
+        return_value=None)
+    mocker.patch(
+        "app.utils.firebase_logic.enable",
+        return_value=None)
+    #  User Created, now testing the change of disabled status
+    response = client.patch(
+        "/disabled_status/12345?disabled=false",
+        headers=headers)
+    assert response.status_code == 200
+    assert not response.json()["disabled"]
+
+    response = client.patch(
+        "/disabled_status/12345?disabled=true",
+        headers=headers)
+    assert response.status_code == 200
+    assert response.json()["disabled"]
