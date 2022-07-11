@@ -322,7 +322,7 @@ def test_update_name(client: TestClient, db: Session, mocker):
     assert response.status_code == 404
 
 
-def test_update_photo(client: TestClient, db: Session, mocker):
+def test_photo(client: TestClient, db: Session, mocker):
     headers = get_valid_api_key()
     mocker.patch(
         "app.utils.firebase_logic.manual_register",
@@ -360,3 +360,157 @@ def test_update_photo(client: TestClient, db: Session, mocker):
     response = client.patch(
         "/user/12345absurdo22/update_photo/?photo=www.fb.com", headers=headers)
     assert response.status_code == 404
+
+
+def test_follow(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.get_user",
+        return_value=schemas.User(
+            uid="1234567",
+            email="hola@hola3.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        return_value=None)
+    response = client.put("/users/1234567", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["uid"] == "1234567"
+
+    mocker.patch(
+        "app.utils.firebase_logic.get_user",
+        return_value=schemas.User(
+            uid="12345678",
+            email="hola@hola34.com",
+            name="El amigo de Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    response = client.put("/users/12345678", headers=headers)
+
+    response = client.post(
+        "users/follow?user_id=1234567&user_id_to_follow=12345678",
+        headers=headers)
+    assert not response.status_code == 404
+
+
+def test_follow_and_unfollow(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.get_user",
+        return_value=schemas.User(
+            uid="1234567",
+            email="hola@hola3.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        return_value=None)
+    response = client.put("/users/1234567", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["uid"] == "1234567"
+
+    mocker.patch(
+        "app.utils.firebase_logic.get_user",
+        return_value=schemas.User(
+            uid="12345678",
+            email="hola@hola34.com",
+            name="El amigo de Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    response = client.put("/users/12345678", headers=headers)
+
+    response = client.post(
+        "users/follow?user_id=1234567&user_id_to_follow=12345678",
+        headers=headers)
+    assert not response.status_code == 404
+
+    response = client.post(
+        "users/unfollow?user_id=1234567&user_id_to_unfollow=12345678",
+        headers=headers)
+    assert response.status_code == 200
+
+
+def test_follow_itself(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.get_user",
+        return_value=schemas.User(
+            uid="1234567",
+            email="hola@hola3.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        return_value=None)
+    response = client.put("/users/1234567", headers=headers)
+
+    mocker.patch(
+        "app.utils.firebase_logic.get_user",
+        return_value=schemas.User(
+            uid="12345678",
+            email="hola@hola34.com",
+            name="El amigo de Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    response = client.put("/users/12345678", headers=headers)
+
+    response = client.post(
+        "users/follow?user_id=1234567&user_id_to_follow=1234567",
+        headers=headers)
+    assert response.status_code == 400  # you can't follow yourself
+
+
+def test_add_and_del_genre(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.get_user",
+        return_value=schemas.User(
+            uid="1234567",
+            email="hola@hola3.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        return_value=None)
+    response = client.put("/users/1234567", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["uid"] == "1234567"
+
+    response = client.post(
+        "users/add_genre?user_id=1234567&genre_id=123",
+        headers=headers)
+    assert response.status_code == 200
+
+    response = client.post(
+        "users/del_genre?user_id=1234567&genre_id=123",
+        headers=headers)
+    assert response.status_code == 200
