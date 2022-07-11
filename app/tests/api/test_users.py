@@ -1,15 +1,12 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-
 from app.schemas import users as schemas
-
-#  from app import schemas
-
-from .base import get_valid_api_key   # , get_invalid_api_key
+from .base import get_valid_api_key, get_invalid_api_key
 
 
 def test_read_main_invalid_token(client: TestClient, db: Session):
-    response = client.get("/")
+    headers = get_invalid_api_key()
+    response = client.get("/", headers=headers)
     assert response.status_code == 401
 
 
@@ -50,6 +47,73 @@ def test_cant_users(client: TestClient, db: Session):
     assert response.status_code == 200
 
 
+def test_delete_user_invalid_user(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.delete_user",
+        return_value=None)
+    response = client.delete("/users/1234", headers=headers)
+    assert response.status_code == 200
+
+
+def test_read_passwordsResets(client: TestClient, db: Session, mocker):
+    mocker.patch(
+        "app.utils.firebase_logic.get_passwords_resets",
+        return_value={"5": 5})
+    headers = get_valid_api_key()
+    response = client.get("/passwordsResets/", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == {"5": 5}
+
+
+def test_read_logins(client: TestClient, db: Session, mocker):
+    mocker.patch(
+        "app.utils.firebase_logic.get_logins",
+        return_value={"1999-25-02": 5})
+    headers = get_valid_api_key()
+    response = client.get("/Logins/", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == {"1999-25-02": 5}
+
+
+def test_read_SinUpStats(client: TestClient, db: Session, mocker):
+    mocker.patch(
+        "app.utils.firebase_logic.get_singUp_stats",
+        return_value={"federated": 8, "manual": 2})
+    headers = get_valid_api_key()
+    response = client.get("/SingUpStats/", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == {"federated": 8, "manual": 2}
+
+
+def test_read_blocked_stats(client: TestClient, db: Session, mocker):
+    mocker.patch(
+        "app.utils.firebase_logic.get_blocked_stats",
+        return_value={"federated": 8, "manual": 2})
+    headers = get_valid_api_key()
+    response = client.get("/blockedStats/", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == {"federated": 8, "manual": 2}
+
+
+def test_new_password_reseted(client: TestClient, db: Session, mocker):
+    mocker.patch(
+        "app.utils.firebase_logic.notify_password_reseted",
+        return_value=None)
+    headers = get_valid_api_key()
+    response = client.post("/newPasswordReseted/", headers=headers)
+    assert response.status_code == 200
+
+
+def test_new_login(client: TestClient, db: Session, mocker):
+    mocker.patch(
+        "app.utils.firebase_logic.notify_login_attempt",
+        return_value=None)
+    headers = get_valid_api_key()
+    response = client.post("/newLogin/?uid=12", headers=headers)
+    assert response.status_code == 200
+
+
 def test_manual_register_user(client: TestClient, db: Session, mocker):
     headers = get_valid_api_key()
     mocker.patch(
@@ -71,17 +135,8 @@ def test_manual_register_user(client: TestClient, db: Session, mocker):
         "email": "xd",
         "password": "123",
     })
-    #  assert response.status_code == 200
-    assert response.json()["uid"] == "12345"
-
-
-def test_delete_user_invalid_user(client: TestClient, db: Session, mocker):
-    headers = get_valid_api_key()
-    mocker.patch(
-        "app.utils.firebase_logic.delete_user",
-        return_value=None)
-    response = client.delete("/users/1234", headers=headers)
     assert response.status_code == 200
+    assert response.json()["uid"] == "12345"
 
 
 def test_change_admin_status(client: TestClient, db: Session, mocker):
@@ -159,13 +214,3 @@ def test_sub_status(client: TestClient, db: Session, mocker):
         headers=headers)
     assert response.status_code == 200
     assert not response.json()["subscription"] == "Premium"
-
-
-def test_read_stat(client: TestClient, db: Session, mocker):
-    mocker.patch(
-        "app.utils.firebase_logic.get_passwords_resets",
-        return_value={"5": 5})
-    headers = get_valid_api_key()
-    response = client.get("/passwordsResets/", headers=headers)
-    assert response.status_code == 200
-    assert response.json() == {"5": 5}
