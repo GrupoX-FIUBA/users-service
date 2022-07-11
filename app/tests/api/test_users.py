@@ -514,3 +514,35 @@ def test_add_and_del_genre(client: TestClient, db: Session, mocker):
         "users/del_genre?user_id=1234567&genre_id=123",
         headers=headers)
     assert response.status_code == 200
+
+
+def test_decode_token(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.get_user",
+        return_value=schemas.User(
+            uid="1234567",
+            email="hola@hola3.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        return_value=None)
+    response = client.put("/users/1234567", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["uid"] == "1234567"
+
+    #  Creamos un usuario de juguete, ahora asumimos que el token es valido.
+    mocker.patch(
+        "app.utils.firebase_logic.decode_token",
+        return_value="1234567")
+
+    response = client.post(
+        "/decode_token/?id_token=1234567",
+        headers=headers)
+    assert response.status_code == 200
