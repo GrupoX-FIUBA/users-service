@@ -61,6 +61,8 @@ services:
       target: test
     container_name: users-service-test
     environment:
+      PAYMENTS_SERVICE_URL: ${PAYMENTS_SERVICE_URL}
+      WALLET_API_KEY: ${WALLET_API_KEY}
       DATABASE_URL: "postgresql://postgres:postgres@db:5432"
       FB_PRIVATE_KEY_ID: ${FB_PRIVATE_KEY_ID}
       FB_CLIENT_EMAIL: ${FB_CLIENT_EMAIL}
