@@ -1,6 +1,8 @@
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
+from app.schemas import users as schemas
+
 #  from app import schemas
 
 from .base import get_valid_api_key   # , get_invalid_api_key
@@ -46,3 +48,86 @@ def test_cant_users(client: TestClient, db: Session):
     headers = get_valid_api_key()
     response = client.get("/users/", headers=headers)
     assert response.status_code == 200
+
+
+def test_manual_register_user(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.manual_register",
+        return_value=schemas.User(
+            uid="12345",
+            email="hola@hola.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        None)
+    response = client.post("/manual_register/", headers=headers, json={
+        "name": "Jorge Dinosaurio",
+        "email": "xd",
+        "password": "123",
+    })
+    assert response.status_code == 200
+    assert response.json()["uid"] == "12345"
+
+
+def test_delete_user_invalid_user(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.delete_user",
+        return_value=None)
+    response = client.delete("/users/1234", headers=headers)
+    assert response.status_code == 200
+
+
+def test_change_admin_status(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.manual_register",
+        return_value=schemas.User(
+            uid="12345",
+            email="hola@hola.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        None)
+    response = client.post("/manual_register/", headers=headers, json={
+        "name": "Jorge Dinosaurio",
+        "email": "xd",
+        "password": "123",
+    })
+    assert response.status_code == 200
+    assert response.json()["uid"] == "12345"
+
+    #  User Created, now testing the change of admin status
+    response = client.patch(
+        "/user/12345/admin_status/?admin=False",
+        headers=headers)
+    assert response.status_code == 200
+    assert not response.json()["admin"]
+
+    #  User Created, now testing the change of admin status
+    response = client.patch(
+        "/user/12345/admin_status/?admin=True",
+        headers=headers)
+    assert response.status_code == 200
+    assert response.json()["admin"]
+
+
+def test_read_stat(client: TestClient, db: Session, mocker):
+    mocker.patch(
+        "app.utils.firebase_logic.get_passwords_resets",
+        return_value={"5": 5})
+    headers = get_valid_api_key()
+    response = client.get("/passwordsResets/", headers=headers)
+    assert response.status_code == 200
+    assert response.json() == {"5": 5}
