@@ -258,3 +258,105 @@ def test_disabled_status(client: TestClient, db: Session, mocker):
         headers=headers)
     assert response.status_code == 200
     assert response.json()["disabled"]
+
+
+def test_put_user(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.get_user",
+        return_value=schemas.User(
+            uid="1234567",
+            email="hola@hola3.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        return_value=None)
+    response = client.put("/users/1234567", headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["uid"] == "1234567"
+
+
+def test_update_name(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.manual_register",
+        return_value=schemas.User(
+            uid="12345",
+            email="hola@hola.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        return_value=None)
+    response = client.post("/manual_register/", headers=headers, json={
+        "name": "Jorge Dinosaurio",
+        "email": "xd",
+        "password": "123",
+    })
+    assert response.status_code == 200
+    assert response.json()["uid"] == "12345"
+    #  user generated, now testing name.
+
+    response = client.patch(
+        "/user/12345/update_name/?name=Carlitox", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["name"] == "Carlitox"
+
+    response = client.patch(
+        "/user/12345/update_name/?name=Carlitox2", headers=headers)
+    assert response.status_code == 200
+    assert not response.json()["name"] == "Carlitox"
+
+    response = client.patch(
+        "/user/12345absurdo22/update_name/?name=Carlitox2", headers=headers)
+    assert response.status_code == 404
+
+
+def test_update_photo(client: TestClient, db: Session, mocker):
+    headers = get_valid_api_key()
+    mocker.patch(
+        "app.utils.firebase_logic.manual_register",
+        return_value=schemas.User(
+            uid="12345",
+            email="hola@hola.com",
+            name="Jorge Dinosaurio",
+            subscription='Regular',
+            disabled=False,
+            admin=False,
+            federated=False
+        ))
+    mocker.patch(
+        "app.utils.api_wallet.create_wallet",
+        return_value=None)
+    response = client.post("/manual_register/", headers=headers, json={
+        "name": "Jorge Dinosaurio",
+        "email": "xd",
+        "password": "123",
+    })
+    assert response.status_code == 200
+    assert response.json()["uid"] == "12345"
+    #  user generated, now testing photo.
+
+    response = client.patch(
+        "/user/12345/update_photo/?photo=www.google.com", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["photo_url"] == "www.google.com"
+
+    response = client.patch(
+        "/user/12345/update_photo/?photo=www.fb.com", headers=headers)
+    assert response.status_code == 200
+    assert not response.json()["photo_url"] == "www.google.com"
+
+    response = client.patch(
+        "/user/12345absurdo22/update_photo/?photo=www.fb.com", headers=headers)
+    assert response.status_code == 404
